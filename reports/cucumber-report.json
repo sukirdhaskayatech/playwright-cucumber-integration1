@@ -1,0 +1,50 @@
+[
+  {
+    "description": "",
+    "elements": [
+      {
+        "description": "",
+        "id": "launch-kayatech-admin-portal;open-the-kayatech-admin-portal",
+        "keyword": "Scenario",
+        "line": 3,
+        "name": "Open the Kayatech Admin Portal",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 4,
+            "name": "I launch the Kayatech Admin Portal",
+            "match": {
+              "location": "tests\\steps\\login.js:7"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 863499
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 5,
+            "name": "the application should be displayed",
+            "match": {
+              "location": "tests\\steps\\login.js:13"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 208300
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "launch-kayatech-admin-portal",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Launch Kayatech Admin Portal",
+    "tags": [],
+    "uri": "tests\\features\\login.feature"
+  }
+]
