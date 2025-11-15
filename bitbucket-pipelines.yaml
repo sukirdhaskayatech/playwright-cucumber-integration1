@@ -23,7 +23,7 @@ pipelines:
 
           - echo "Uploading test results to Xray..."
           - curl -H "Authorization: Bearer $TOKEN" \
-                 -F "file=@reports/cucumber.json" \
+                 -F "file=@reports/cucumber-report.json" \
                  https://xray.cloud.getxray.app/api/v2/import/execution/cucumber
 
           - echo "Pipeline completed!"
