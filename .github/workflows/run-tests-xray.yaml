@@ -1,0 +1,45 @@
+name: Run Playwright + Cucumber + Upload to Xray
+
+on:
+  workflow_dispatch:   # Allows manual trigger
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install Playwright Browsers
+        run: npx playwright install
+
+      - name: Run Cucumber tests
+        run: pnpm exec cucumber-js --format json:reports/cucumber-report.json --format progress || true
+
+      - name: Authenticate to Xray
+        id: xray_auth
+        run: |
+          TOKEN=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"client_id\": \"${{ secrets.XRAY_CLIENT_ID }}\", \"client_secret\": \"${{ secrets.XRAY_CLIENT_SECRET }}\"}" \
+            https://xray.cloud.getxray.app/api/v1/authenticate | tr -d '"')
+
+          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
+
+      - name: Upload results to Xray
+        run: |
+          curl -H "Authorization: Bearer $TOKEN" \
+               -F "file=@reports/cucumber-report.json" \
+               https://xray.cloud.getxray.app/api/v2/import/execution/cucumber/multipart
