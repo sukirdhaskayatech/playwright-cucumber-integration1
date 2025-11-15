@@ -12,14 +12,13 @@ pipelines:
           - npx playwright install
 
           - echo "Running Cucumber tests..."
-          - npx cucumber-js --format json:reports/cucumber.json || true
+          - npx cucumber-js --format json:reports/cucumber-report.json || true
 
           - echo "Authenticating to Xray..."
           - TOKEN=$(curl -s -X POST \
               -H "Content-Type: application/json" \
               -d "{\"client_id\": \"${XRAY_CLIENT_ID}\", \"client_secret\": \"${XRAY_CLIENT_SECRET}\"}" \
-              https://xray.cloud.getxray.app/api/v1/authenticate \
-              | tr -d '"')
+              https://xray.cloud.getxray.app/api/v1/authenticate | tr -d '"')
 
           - echo "Uploading test results to Xray..."
           - curl -H "Authorization: Bearer $TOKEN" \
