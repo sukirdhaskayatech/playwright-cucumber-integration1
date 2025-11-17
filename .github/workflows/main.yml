@@ -12,24 +12,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Node
+      # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # Install dependencies & Playwright browsers
+      # Install dependencies
       - name: Install Dependencies
         run: |
-          npm ci
+          npm install
           npx playwright install --with-deps
 
-      # Run your Cucumber tests
+      # Run Cucumber Tests (IMPORTANT: Explicit folder path)
       - name: Run Cucumber Tests
         run: |
-          npx cucumber-js --format json:reports/cucumber-report.json
+          npx cucumber-js tests/features/**/*.feature \
+            --require tests/steps/**/*.js \
+            --format json:reports/cucumber-report.json
 
-      # Xray Authentication
+      # Authenticate with Xray
       - name: Authenticate with Xray
         id: xray-auth
         run: |
@@ -39,7 +41,7 @@ jobs:
             "${{ secrets.JIRA_BASE_URL }}/api/v2/authenticate" | tr -d '"')
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
-      # Upload to Xray (This creates a new Test Execution)
+      # Upload to Xray
       - name: Upload Results to Xray
         run: |
           curl -X POST \
@@ -47,6 +49,5 @@ jobs:
             -F "file=@reports/cucumber-report.json" \
             "${{ secrets.JIRA_BASE_URL }}/api/v2/import/execution/cucumber?projectKey=${{ secrets.JIRA_PROJECT_KEY }}"
 
-      # (Optional) Log success
       - name: Upload Complete
         run: echo "Results uploaded to Xray successfully."
