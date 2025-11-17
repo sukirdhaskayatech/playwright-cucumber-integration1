@@ -1,0 +1,52 @@
+name: Playwright + Cucumber + Xray Integration
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Setup Node
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # Install dependencies & Playwright browsers
+      - name: Install Dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps
+
+      # Run your Cucumber tests
+      - name: Run Cucumber Tests
+        run: |
+          npx cucumber-js --format json:reports/cucumber-report.json
+
+      # Xray Authentication
+      - name: Authenticate with Xray
+        id: xray-auth
+        run: |
+          TOKEN=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"client_id\": \"${{ secrets.XRAY_CLIENT_ID }}\", \"client_secret\": \"${{ secrets.XRAY_CLIENT_SECRET }}\"}" \
+            "${{ secrets.JIRA_BASE_URL }}/api/v2/authenticate" | tr -d '"')
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      # Upload to Xray (This creates a new Test Execution)
+      - name: Upload Results to Xray
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ steps.xray-auth.outputs.token }}" \
+            -F "file=@reports/cucumber-report.json" \
+            "${{ secrets.JIRA_BASE_URL }}/api/v2/import/execution/cucumber?projectKey=${{ secrets.JIRA_PROJECT_KEY }}"
+
+      # (Optional) Log success
+      - name: Upload Complete
+        run: echo "Results uploaded to Xray successfully."
